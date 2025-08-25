@@ -1,0 +1,2 @@
+[console_scripts]
+prompt-validator = prompt_validator.main:validate

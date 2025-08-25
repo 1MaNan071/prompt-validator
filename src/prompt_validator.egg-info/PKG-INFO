@@ -1,0 +1,26 @@
+Metadata-Version: 2.4
+Name: prompt-validator
+Version: 0.1.0
+Summary: A module to validate and update prompt directories
+Author: Manan Wakode
+Requires-Python: >=3.9
+Requires-Dist: langchain>=0.3.0
+Requires-Dist: langchain-community>=0.3.0
+Requires-Dist: langchain-core>=0.3.0
+Requires-Dist: langchain-groq>=0.1.0
+Requires-Dist: langchain-text-splitters>=0.3.0
+Requires-Dist: faiss-cpu>=1.8.0
+Requires-Dist: groq>=0.11.0
+Requires-Dist: python-dotenv>=1.0.0
+Requires-Dist: click>=8.1.7
+Requires-Dist: rich>=13.7.0
+Requires-Dist: sentence-transformers>=2.2.2
+Requires-Dist: pydantic>=2.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.4.3; extra == "dev"
+Requires-Dist: pytest-cov>=4.1.0; extra == "dev"
+Dynamic: author
+Dynamic: provides-extra
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary

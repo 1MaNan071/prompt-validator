@@ -1,0 +1,92 @@
+{
+  "summary": {
+    "total_files": 4,
+    "files_with_issues": 4,
+    "total_issues": 11
+  },
+  "details": [
+    {
+      "file": "prompt1.txt",
+      "issues": [
+        {
+          "issue_type": "Redundancy",
+          "description": "The prompt lacks a clear task description. It only mentions writing a guide, but does not specify what kind of guide or what it should cover.",
+          "suggestion": "Add a clear task description, such as 'Write a comprehensive guide on planting tomatoes, covering topics such as soil preparation, seed selection, and care instructions.'"
+        },
+        {
+          "issue_type": "Missing Section",
+          "description": "The prompt does not specify any success criteria or measurable outcomes. This makes it difficult to determine if the guide is complete or effective.",
+          "suggestion": "Add a section on success criteria, such as 'The guide should include at least 5 steps for planting tomatoes, and provide detailed instructions for each step.'"
+        },
+        {
+          "issue_type": "Missing Section",
+          "description": "The prompt does not provide any examples or edge cases. This makes it difficult to understand the scope and complexity of the task.",
+          "suggestion": "Add at least one example of a specific scenario, such as 'What to do if the soil is too dry or too wet for planting tomatoes.'"
+        }
+      ],
+      "suggestion": "### Task\nCreate a comprehensive guide on planting tomatoes, covering the entire process from preparation to harvesting, including tips and best practices.\n\n### Success Criteria\nThe guide must:\n\n* Provide a step-by-step process for preparing the soil, selecting tomato varieties, and planting seeds or seedlings\n* Include detailed information on watering, fertilizing, and pruning techniques\n* Offer advice on common pests and diseases and how to prevent or treat them\n* Provide a timeline for expected growth and harvesting\n* Be at least 500 words in length\n\n### Examples with Edge Cases\nExample: A beginner-friendly guide for planting cherry tomatoes in a small backyard garden, including tips on how to train the plants to climb a trellis.\n\nEdge Case: A guide for planting heirloom tomatoes in a large commercial greenhouse, including information on how to optimize lighting and temperature conditions for maximum yield.\n\n### CoT/TOT Steps (if required)\nNot required for this task.",
+      "status": "completed"
+    },
+    {
+      "file": "prompt2.txt",
+      "issues": [
+        {
+          "issue_type": "Redundancy",
+          "description": "The prompt is missing a clear task description. The task should be described in a concise and specific manner.",
+          "suggestion": "Rewrite the prompt to focus on a specific task, such as 'Provide a step-by-step guide on how to bake sourdough bread' or 'Explain the process of making sourdough bread from scratch'."
+        },
+        {
+          "issue_type": "Contradiction",
+          "description": "The prompt includes a contradictory requirement. The task is to explain how to bake sourdough bread, but the explanation must be no longer than 100 words, which is not feasible for a comprehensive historical background.",
+          "suggestion": "Rewrite the prompt to remove the contradictory requirement or adjust the task to accommodate the historical background."
+        },
+        {
+          "issue_type": "Missing Section",
+          "description": "The prompt includes a missing section. The task requires a comprehensive historical background on sourdough, but the prompt does not specify what information should be included.",
+          "suggestion": "Rewrite the prompt to specify what information should be included in the historical background, such as 'Provide a comprehensive 10,000-word historical background on sourdough, including its origins, evolution, and cultural significance'."
+        }
+      ],
+      "suggestion": "### Task\nWrite a comprehensive historical background on sourdough bread, covering its origins, evolution, and cultural significance, in 10,000 words.\n\n### Success Criteria\n* The historical background is written in 10,000 words.\n* The background covers the origins, evolution, and cultural significance of sourdough bread.\n* The writing is clear, concise, and well-organized.\n\n### Examples with Edge Cases\nExample: A 10,000-word historical background on sourdough bread that covers its origins in ancient Egypt, its evolution through medieval Europe, and its cultural significance in modern-day artisanal bakeries.\n\nEdge Case: A 10,000-word historical background on sourdough bread that focuses on its role in the California Gold Rush era, including its use as a staple food for miners and its impact on the development of the state's agricultural industry.\n\n### CoT/TOT Steps (if required)\nNot required for this task.",
+      "status": "completed"
+    },
+    {
+      "file": "prompt3.txt",
+      "issues": [
+        {
+          "issue_type": "Missing Section",
+          "description": "The prompt is missing the 'Task' section, which should clearly describe what to do.",
+          "suggestion": "Add a clear description of the task to be performed, such as 'Design a test plan for an e-commerce checkout system'."
+        },
+        {
+          "issue_type": "Missing Section",
+          "description": "The prompt is missing the 'Examples with Edge Cases' section, which should provide at least one example, including an edge case.",
+          "suggestion": "Add at least one example of a test case, including an edge case, to help clarify the requirements."
+        },
+        {
+          "issue_type": "Missing Section",
+          "description": "The prompt is missing the 'CoT/TOT Steps if Required' section, which should provide additional guidance for complex tasks.",
+          "suggestion": "Add additional guidance or steps if the task is complex and requires further clarification."
+        }
+      ],
+      "suggestion": "### Task\nDesign a comprehensive test plan for an e-commerce checkout system, outlining the necessary steps to ensure the system functions correctly and efficiently.\n\n### Success Criteria\nThe test plan should include the following measurable and verifiable conditions for completion:\n\n* A clear description of the test environment and setup\n* A list of functional requirements for the checkout system\n* A detailed plan for testing each requirement\n* Identification of potential edge cases and scenarios\n* A plan for reporting and tracking test results\n\n### Examples with Edge Cases\nExample: A customer attempts to checkout with a promotional code that has expired. The system should correctly reject the code and display an error message.\n\nEdge Case: A customer attempts to checkout with a gift card that has a remaining balance of $0.01. The system should correctly apply the gift card balance and display the updated total.\n\n### CoT/TOT Steps (if required)\nNot required for this task.",
+      "status": "completed"
+    },
+    {
+      "file": "prompt4.txt",
+      "issues": [
+        {
+          "issue_type": "Prohibited Content",
+          "description": "The prompt contains prohibited content (PII) - John Smith's email address.",
+          "suggestion": "Remove or anonymize the email address."
+        },
+        {
+          "issue_type": "Missing Section",
+          "description": "The prompt does not specify the meeting schedule, which is a crucial piece of information.",
+          "suggestion": "Provide more details about the meeting schedule."
+        }
+      ],
+      "suggestion": "### Task\nWrite an email to a recipient explaining the meeting schedule.\n\n### Success Criteria\n* The email is addressed to a valid email address.\n* The email includes the meeting schedule.\n* The email includes a phone number for confirmation.\n\n### Examples with Edge Cases\nExample: Write an email to a colleague explaining the meeting schedule for a project meeting on Friday at 2 PM. Edge Case: Write an email to a new employee explaining the meeting schedule for their onboarding session on Monday at 10 AM.\n\n### CoT/TOT Steps (if required)\nNot required for this task.",
+      "status": "completed"
+    }
+  ]
+}

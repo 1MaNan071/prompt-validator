@@ -1,0 +1,3 @@
+
+Write an email to John Smith at john.smith@example.com explaining the meeting schedule.
+Include his phone number for confirmation.
