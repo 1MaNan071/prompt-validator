@@ -1,4 +1,3 @@
-# src/prompt_validator/validator.py
 
 import os
 from typing import Dict, List, Any
@@ -13,10 +12,10 @@ class PromptValidator:
         """
         Validates a single prompt file using the LLM-based handler.
 
-        Args:
+        Args it has
             file_path: The path to the prompt file.
 
-        Returns:
+        Returns like 
             A dictionary containing the validation results.
         """
         try:
@@ -30,20 +29,20 @@ class PromptValidator:
                 "status": "error"
             }
 
-        # Use the LLM handler to get a structured validation result
+        
         validation_result = self.llm_handler.validate_prompt_with_llm(content)
         
         issues = [issue.dict() for issue in validation_result.issues]
         suggestion = None
 
         if issues:
-            # If issues are found, get a suggestion for a full fix
+            
             suggestion = self.llm_handler.suggest_full_fix(content, validation_result.issues)
 
         return {
             "file": os.path.basename(file_path),
             "issues": issues,
-            "suggestion": suggestion, # This will hold the full corrected prompt text
+            "suggestion": suggestion, 
             "status": "completed"
         }
 
@@ -78,4 +77,4 @@ class PromptValidator:
             with open(file_path, 'w', encoding='utf-8') as f:
                 f.write(new_content)
         except Exception as e:
-            print(f"Error updating file {file_path}: {e}")
+            raise IOError(f"Error updating file {file_path}: {e}")

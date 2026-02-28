@@ -1,4 +1,4 @@
-# src/prompt_validator/llm_handler.py
+
 
 import os
 from typing import List
@@ -11,37 +11,44 @@ from .schemas import ValidationResult, ValidationIssue
 load_dotenv()
 
 class LLMHandler:
-    def __init__(self):
-        self.api_key = os.getenv("GROQ_API_KEY")
+    def __init__(self, api_key: str = None):
+        self.api_key = api_key or os.getenv("GROQ_API_KEY")
         if not self.api_key:
             raise ValueError("GROQ_API_KEY not found in environment variables.")
         
         self.llm = ChatGroq(
             temperature=0,
-            model_name="llama3-8b-8192",
+            model_name="llama-3.1-8b-instant",
             api_key=self.api_key,
         )
         self.structured_llm = self.llm.with_structured_output(ValidationResult)
 
     def validate_prompt_with_llm(self, prompt_content: str) -> ValidationResult:
-        # UPDATED to include CoT/TOT check
-        system_prompt = """
-        You are an expert prompt engineering assistant. Your task is to analyze a given prompt and validate it against a set of rules.
-        Identify all issues related to redundancy, contradictions, missing sections, and prohibited content (like PII or secrets).
-        For each issue found in the redundancy, contradictions, missing sections, and prohibited content, provide a clear description and a concrete suggestion for how to fix it.
         
-        The required sections for a complete prompt are:
-        - Task: A clear description of what to do.
-        - Success Criteria: Measurable, verifiable conditions for completion.
-        - Examples with Edge Cases: At least one example, including an edge case.
-        - CoT/TOT Steps if Required: Check if the task is complex and would benefit from this section.
-        
-        Prohibited content includes:
-        - Personal Identifiable Information (PII) like names, emails, phone numbers, addresses if mentioned in the prompt.
-        - Secrets like API keys, passwords, or credentials.
-        
-        Analyze the user's prompt and return a list of all issues you find. If no issues are found, return an empty list.
-        """
+        system_prompt = """You are an expert prompt engineering assistant. Analyze the given prompt and \
+validate it against these rules. Identify ALL issues — do not skip any.
+
+**Validation Rules (4 categories):**
+
+1. **Redundancy** — Flag repetitive phrases, duplicate instructions, or \
+   unnecessarily verbose wording that adds no value.
+
+2. **Contradiction** — Flag conflicting requirements or instructions that \
+   cannot both be true (e.g., "be brief" + "write 10,000 words").
+
+3. **Missing Section** — A complete prompt MUST contain these sections. Flag \
+   any that are absent:
+   - Task: A clear description of what to do.
+   - Success Criteria: Measurable, verifiable conditions for completion.
+   - Examples with Edge Cases: At least one example, including an edge case.
+   - CoT/TOT Steps (if required): Chain of Thought / Tree of Thought steps \
+     for complex tasks.
+
+4. **Prohibited Content** — Flag any PII (names, emails, phone numbers, \
+   addresses) or secrets (API keys, passwords, credentials).
+
+For each issue found, provide a clear description and a concrete suggestion. \
+If no issues are found, return an empty list."""
         
         human_prompt = "Please validate the following prompt text:\n\n---\n\n{prompt_text}"
         
@@ -67,7 +74,7 @@ class LLMHandler:
 
         issue_summary = "\n".join(f"- **{issue.issue_type}**: {issue.description}" for issue in issues)
 
-        # UPDATED to enforce the strict output structure
+        
         system_prompt = """
         You are an expert prompt engineer tasked with rewriting a flawed prompt.
         Your goal is to fix all the identified issues while strictly adhering to the Prompt Strategy Compliance rules.

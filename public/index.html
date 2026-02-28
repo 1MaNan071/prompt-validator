@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prompt Validator — Validate & Fix Your Prompts</title>
+    <meta name="description"
+        content="AI-powered prompt validator that checks for redundancy, contradictions, missing sections, and prohibited content. Get instant fixes." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet" />
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        /* ── Reset & Tokens ──────────────────────────────── */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --radius-xs: 6px;
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow: 0 1px 3px rgba(0, 0, 0, .12), 0 1px 2px rgba(0, 0, 0, .08);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, .2), 0 4px 10px rgba(0, 0, 0, .1);
+        }
+
+        [data-theme="dark"] {
+            --bg: #09090b;
+            --bg-subtle: #0f0f12;
+            --surface: #18181b;
+            --surface-hover: #1e1e22;
+            --card: #1c1c20;
+            --border: #2e2e33;
+            --border-subtle: #252529;
+            --primary: #818cf8;
+            --primary-hover: #6366f1;
+            --primary-bg: rgba(99, 102, 241, 0.12);
+            --success: #4ade80;
+            --success-bg: rgba(74, 222, 128, 0.1);
+            --warning: #fbbf24;
+            --warning-bg: rgba(251, 191, 36, 0.1);
+            --error: #f87171;
+            --error-bg: rgba(248, 113, 113, 0.1);
+            --info: #60a5fa;
+            --info-bg: rgba(96, 165, 250, 0.1);
+            --text: #fafafa;
+            --text-secondary: #d4d4d8;
+            --text-muted: #71717a;
+            --glow: rgba(99, 102, 241, 0.15);
+        }
+
+        [data-theme="light"] {
+            --bg: #f8fafc;
+            --bg-subtle: #f1f5f9;
+            --surface: #ffffff;
+            --surface-hover: #f8fafc;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --border-subtle: #f1f5f9;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --primary-bg: rgba(99, 102, 241, 0.08);
+            --success: #16a34a;
+            --success-bg: rgba(22, 163, 74, 0.08);
+            --warning: #d97706;
+            --warning-bg: rgba(217, 119, 6, 0.08);
+            --error: #dc2626;
+            --error-bg: rgba(220, 38, 38, 0.08);
+            --info: #2563eb;
+            --info-bg: rgba(37, 99, 235, 0.08);
+            --text: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #94a3b8;
+            --glow: rgba(99, 102, 241, 0.08);
+            --shadow: 0 1px 3px rgba(0, 0, 0, .06), 0 1px 2px rgba(0, 0, 0, .04);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, .08), 0 4px 10px rgba(0, 0, 0, .04);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ── Header ──────────────────────────────────────── */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(9, 9, 11, 0.75);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        [data-theme="light"] .header {
+            background: rgba(248, 250, 252, 0.8);
+        }
+
+        .header-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary), #a78bfa);
+            border-radius: var(--radius-xs);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .logo h1 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .logo h1 span {
+            color: var(--primary);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-xs);
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition);
+            font-size: 16px;
+        }
+
+        .icon-btn:hover {
+            background: var(--surface-hover);
+            color: var(--text);
+            border-color: var(--primary);
+        }
+
+        /* ── Settings Panel ──────────────────────────────── */
+        .settings-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            background: var(--bg-subtle);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .settings-panel.open {
+            max-height: 120px;
+        }
+
+        .settings-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .settings-content label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .settings-content input {
+            flex: 1;
+            max-width: 400px;
+            padding: 8px 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xs);
+            color: var(--text);
+            font-family: var(--font-mono);
+            font-size: 13px;
+            outline: none;
+            transition: border-color var(--transition);
+        }
+
+        .settings-content input:focus {
+            border-color: var(--primary);
+        }
+
+        .settings-content small {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* ── Main Layout ─────────────────────────────────── */
+        .main {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 32px 24px 80px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ── Section Card ────────────────────────────────── */
+        .section-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .section-header h2 {
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        .section-header h3 {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* ── Input Section ───────────────────────────────── */
+        .sample-select {
+            padding: 6px 10px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xs);
+            color: var(--text-muted);
+            font-size: 12px;
+            font-family: var(--font-sans);
+            cursor: pointer;
+            outline: none;
+            transition: all var(--transition);
+        }
+
+        .sample-select:hover {
+            border-color: var(--primary);
+            color: var(--text);
+        }
+
+        .textarea-wrapper {
+            padding: 0;
+        }
+
+        #prompt-input {
+            width: 100%;
+            min-height: 320px;
+            padding: 16px 20px;
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-family: var(--font-sans);
+            font-size: 14px;
+            line-height: 1.7;
+            resize: vertical;
+            outline: none;
+        }
+
+        #prompt-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .textarea-footer {
+            padding: 10px 20px;
+            border-top: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .char-count {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+
+        .hint {
+            font-size: 11px;
+            color: var(--text-muted);
+            background: var(--card);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        /* ── Validate Button ─────────────────────────────── */
+        .validate-btn {
+            width: 100%;
+            margin-top: 12px;
+            padding: 14px 24px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius);
+            font-family: var(--font-sans);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .validate-btn:hover:not(:disabled) {
+            background: var(--primary-hover);
+            box-shadow: 0 0 20px var(--glow);
+            transform: translateY(-1px);
+        }
+
+        .validate-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .validate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .validate-btn .spinner {
+            display: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        .validate-btn.loading .spinner {
+            display: block;
+        }
+
+        .validate-btn.loading .btn-text {
+            display: none;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ── Results Section ──────────────────────────────── */
+        .results-placeholder {
+            padding: 80px 20px;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .results-placeholder svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .results-placeholder p {
+            font-size: 14px;
+        }
+
+        .results-content {
+            display: none;
+        }
+
+        .results-content.visible {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── Score Card ──────────────────────────────────── */
+        .score-card {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .score-ring {
+            position: relative;
+            width: 72px;
+            height: 72px;
+        }
+
+        .score-ring svg {
+            width: 72px;
+            height: 72px;
+            transform: rotate(-90deg);
+        }
+
+        .score-ring .bg {
+            fill: none;
+            stroke: var(--border);
+            stroke-width: 5;
+        }
+
+        .score-ring .progress {
+            fill: none;
+            stroke-width: 5;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s ease, stroke 0.3s ease;
+        }
+
+        .score-value {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+            font-family: var(--font-mono);
+        }
+
+        .score-info h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .score-info p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .score-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .score-badge.excellent {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+
+        .score-badge.good {
+            background: var(--info-bg);
+            color: var(--info);
+        }
+
+        .score-badge.fair {
+            background: var(--warning-bg);
+            color: var(--warning);
+        }
+
+        .score-badge.poor {
+            background: var(--error-bg);
+            color: var(--error);
+        }
+
+        /* ── Issues List ─────────────────────────────────── */
+        .issues-header {
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border-subtle);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .issue-card {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border-subtle);
+            border-left: 3px solid transparent;
+            transition: background var(--transition);
+        }
+
+        .issue-card:hover {
+            background: var(--surface-hover);
+        }
+
+        .issue-card:last-child {
+            border-bottom: none;
+        }
+
+        .issue-card.type-redundancy {
+            border-left-color: var(--warning);
+        }
+
+        .issue-card.type-contradiction {
+            border-left-color: var(--error);
+        }
+
+        .issue-card.type-missing-section {
+            border-left-color: var(--info);
+        }
+
+        .issue-card.type-prohibited {
+            border-left-color: var(--error);
+        }
+
+        .issue-card.type-cot {
+            border-left-color: var(--primary);
+        }
+
+        .issue-type {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .issue-type .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .issue-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .issue-suggestion {
+            font-size: 12px;
+            color: var(--text-muted);
+            padding: 8px 10px;
+            background: var(--card);
+            border-radius: var(--radius-xs);
+            border-left: 2px solid var(--primary);
+        }
+
+        .issue-suggestion strong {
+            color: var(--text-secondary);
+        }
+
+        /* ── No Issues ───────────────────────────────────── */
+        .no-issues {
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .no-issues .check-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--success-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 24px;
+        }
+
+        .no-issues h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--success);
+            margin-bottom: 4px;
+        }
+
+        .no-issues p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* ── Fixed Prompt ────────────────────────────────── */
+        .fixed-section {
+            margin-top: 24px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            animation: fadeIn 0.4s ease 0.2s both;
+        }
+
+        .fixed-header {
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .fixed-header h3 {
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .fixed-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .fixed-actions .icon-btn {
+            font-size: 14px;
+        }
+
+        .fixed-prompt-body {
+            padding: 20px;
+            font-size: 13px;
+            line-height: 1.7;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .fixed-prompt-body h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary);
+            margin: 16px 0 8px;
+        }
+
+        .fixed-prompt-body h3:first-child {
+            margin-top: 0;
+        }
+
+        .fixed-prompt-body p {
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .fixed-prompt-body ul,
+        .fixed-prompt-body ol {
+            padding-left: 20px;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        .fixed-prompt-body li {
+            margin-bottom: 4px;
+        }
+
+        /* ── Toast ───────────────────────────────────────── */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 12px 20px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            color: var(--text);
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            animation: slideUp 0.3s ease, fadeOut 0.3s ease 2.5s forwards;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(12px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+        }
+
+        /* ── Error Banner ────────────────────────────────── */
+        .error-banner {
+            padding: 16px 20px;
+            background: var(--error-bg);
+            border: 1px solid var(--error);
+            border-radius: var(--radius-sm);
+            color: var(--error);
+            font-size: 13px;
+            margin-top: 12px;
+            display: flex;
+            align-items: start;
+            gap: 10px;
+        }
+
+        .error-banner .error-icon {
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .error-banner .error-text {
+            line-height: 1.5;
+        }
+
+        /* ── Scrollbar ───────────────────────────────────── */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* ── Footer ──────────────────────────────────────── */
+        .footer {
+            text-align: center;
+            padding: 24px;
+            font-size: 12px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ── Header ──────────────────────────────────────── -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">⚡</div>
+                <h1>Prompt<span>Validator</span></h1>
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn" id="settings-toggle" title="API Settings" aria-label="Toggle settings">
+                    ⚙️
+                </button>
+                <button class="icon-btn" id="theme-toggle" title="Toggle Theme" aria-label="Toggle theme">
+                    🌙
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ── Settings Panel ──────────────────────────────── -->
+    <div class="settings-panel" id="settings-panel">
+        <div class="settings-content">
+            <label for="api-key">Groq API Key</label>
+            <input type="password" id="api-key" placeholder="gsk_..." autocomplete="off" />
+            <small>Optional — uses server key if empty</small>
+        </div>
+    </div>
+
+    <!-- ── Main Content ────────────────────────────────── -->
+    <main class="main">
+        <!-- Input Column -->
+        <div>
+            <div class="section-card">
+                <div class="section-header">
+                    <h2>📝 Your Prompt</h2>
+                    <select class="sample-select" id="sample-select" aria-label="Load sample prompt">
+                        <option value="">Load sample…</option>
+                        <option value="vague">Vague Prompt</option>
+                        <option value="contradictory">Contradictory Prompt</option>
+                        <option value="partial">Partial Prompt</option>
+                        <option value="pii">PII Prompt</option>
+                    </select>
+                </div>
+                <div class="textarea-wrapper">
+                    <textarea id="prompt-input"
+                        placeholder="Paste or type your prompt here…&#10;&#10;The validator will check for:&#10;  • Redundancy&#10;  • Contradictions&#10;  • Missing sections (Task, Criteria, Examples, CoT)&#10;  • Prohibited content (PII, secrets)"></textarea>
+                </div>
+                <div class="textarea-footer">
+                    <span class="char-count" id="char-count">0 characters</span>
+                    <span class="hint">Ctrl + Enter to validate</span>
+                </div>
+            </div>
+
+            <button class="validate-btn" id="validate-btn">
+                <span class="btn-text">▶ Validate Prompt</span>
+                <div class="spinner"></div>
+            </button>
+
+            <div id="error-container"></div>
+        </div>
+
+        <!-- Results Column -->
+        <div>
+            <div class="section-card" id="results-card">
+                <!-- Placeholder -->
+                <div class="results-placeholder" id="results-placeholder">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p>Enter a prompt and click <strong>Validate</strong><br />to see the analysis</p>
+                </div>
+
+                <!-- Results (hidden initially) -->
+                <div class="results-content" id="results-content">
+                    <!-- Score -->
+                    <div class="score-card" id="score-card">
+                        <div class="score-ring">
+                            <svg viewBox="0 0 36 36">
+                                <circle class="bg" cx="18" cy="18" r="15.5" />
+                                <circle class="progress" id="score-progress" cx="18" cy="18" r="15.5"
+                                    stroke-dasharray="97.4" stroke-dashoffset="97.4" />
+                            </svg>
+                            <div class="score-value" id="score-value">—</div>
+                        </div>
+                        <div class="score-info">
+                            <h3>Prompt Quality Score</h3>
+                            <p><span id="issue-count">0</span> issue(s) found &nbsp;
+                                <span class="score-badge" id="score-badge">—</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Issues -->
+                    <div id="issues-container"></div>
+                </div>
+            </div>
+
+            <!-- Fixed Prompt (shown after validation) -->
+            <div class="fixed-section" id="fixed-section" style="display:none">
+                <div class="fixed-header">
+                    <h3>✨ Fixed Prompt</h3>
+                    <div class="fixed-actions">
+                        <button class="icon-btn" id="copy-btn" title="Copy to clipboard">📋</button>
+                        <button class="icon-btn" id="download-btn" title="Download JSON report">📥</button>
+                    </div>
+                </div>
+                <div class="fixed-prompt-body" id="fixed-prompt-body"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ── Footer ──────────────────────────────────────── -->
+    <footer class="footer">
+        Built with FastAPI & Groq · Powered by Llama 3.1 ·
+        <a href="/api/docs" target="_blank">API Docs</a>
+    </footer>
+
+    <!-- ── JavaScript ──────────────────────────────────── -->
+    <script>
+        (() => {
+            'use strict';
+
+            // ── DOM refs ────────────────────────────────────
+            const $ = (s) => document.querySelector(s);
+            const promptInput = $('#prompt-input');
+            const charCount = $('#char-count');
+            const validateBtn = $('#validate-btn');
+            const sampleSelect = $('#sample-select');
+            const apiKeyInput = $('#api-key');
+            const settingsPanel = $('#settings-panel');
+            const settingsToggle = $('#settings-toggle');
+            const themeToggle = $('#theme-toggle');
+            const resultsPlaceholder = $('#results-placeholder');
+            const resultsContent = $('#results-content');
+            const issuesContainer = $('#issues-container');
+            const scoreProgress = $('#score-progress');
+            const scoreValue = $('#score-value');
+            const issueCount = $('#issue-count');
+            const scoreBadge = $('#score-badge');
+            const fixedSection = $('#fixed-section');
+            const fixedBody = $('#fixed-prompt-body');
+            const copyBtn = $('#copy-btn');
+            const downloadBtn = $('#download-btn');
+            const errorContainer = $('#error-container');
+
+            let lastResult = null;
+            const API_BASE = window.location.origin;
+
+            // ── Samples ─────────────────────────────────────
+            const SAMPLES = {
+                vague: `Write a detailed guide about planting tomatoes. Make sure it is very detailed and descriptive.\nEnsure the guide is extremely detailed with many details.`,
+                contradictory: `Explain how to bake sourdough bread.\nThe explanation must be no longer than 100 words.\nInclude a comprehensive 10,000-word historical background on sourdough.`,
+                partial: `Design a test plan for an e-commerce checkout system. List the functional requirements.\nProvide success criteria.`,
+                pii: `Write an email to John Smith at john.smith@example.com explaining the meeting schedule.\nInclude his phone number for confirmation.`,
+            };
+
+            // ── Theme ───────────────────────────────────────
+            function initTheme() {
+                const saved = localStorage.getItem('pv-theme') || 'dark';
+                document.documentElement.setAttribute('data-theme', saved);
+                themeToggle.textContent = saved === 'dark' ? '🌙' : '☀️';
+            }
+
+            themeToggle.addEventListener('click', () => {
+                const current = document.documentElement.getAttribute('data-theme');
+                const next = current === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                localStorage.setItem('pv-theme', next);
+                themeToggle.textContent = next === 'dark' ? '🌙' : '☀️';
+            });
+
+            // ── Settings ────────────────────────────────────
+            settingsToggle.addEventListener('click', () => {
+                settingsPanel.classList.toggle('open');
+            });
+
+            // Load saved key
+            const savedKey = localStorage.getItem('pv-api-key') || '';
+            apiKeyInput.value = savedKey;
+            apiKeyInput.addEventListener('input', () => {
+                localStorage.setItem('pv-api-key', apiKeyInput.value);
+            });
+
+            // ── Char count ──────────────────────────────────
+            promptInput.addEventListener('input', () => {
+                const len = promptInput.value.length;
+                charCount.textContent = `${len.toLocaleString()} character${len !== 1 ? 's' : ''}`;
+            });
+
+            // ── Samples ─────────────────────────────────────
+            sampleSelect.addEventListener('change', () => {
+                const key = sampleSelect.value;
+                if (key && SAMPLES[key]) {
+                    promptInput.value = SAMPLES[key];
+                    promptInput.dispatchEvent(new Event('input'));
+                }
+                sampleSelect.value = '';
+            });
+
+            // ── Keyboard shortcut ───────────────────────────
+            promptInput.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    e.preventDefault();
+                    runValidation();
+                }
+            });
+
+            // ── Validate ────────────────────────────────────
+            validateBtn.addEventListener('click', runValidation);
+
+            async function runValidation() {
+                const prompt = promptInput.value.trim();
+                if (!prompt) {
+                    showError('Please enter a prompt to validate.');
+                    return;
+                }
+
+                setLoading(true);
+                clearError();
+                hideResults();
+
+                const body = { prompt };
+                const apiKey = apiKeyInput.value.trim();
+                if (apiKey) body.api_key = apiKey;
+
+                try {
+                    const res = await fetch(`${API_BASE}/api/validate`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body),
+                    });
+
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => ({ detail: 'Unknown error' }));
+                        throw new Error(err.detail || `HTTP ${res.status}`);
+                    }
+
+                    const data = await res.json();
+                    lastResult = data;
+                    renderResults(data);
+                } catch (err) {
+                    showError(err.message || 'Failed to connect to the API.');
+                } finally {
+                    setLoading(false);
+                }
+            }
+
+            // ── Render Results ──────────────────────────────
+            function renderResults(data) {
+                resultsPlaceholder.style.display = 'none';
+                resultsContent.classList.add('visible');
+
+                // Score
+                const score = data.score;
+                const pct = score / 10;
+                const circumference = 97.4;
+                scoreProgress.style.strokeDashoffset = circumference * (1 - pct);
+                scoreProgress.style.stroke = scoreColor(score);
+                scoreValue.textContent = score;
+
+                issueCount.textContent = data.issues.length;
+
+                // Badge
+                let label, cls;
+                if (score >= 9) { label = 'Excellent'; cls = 'excellent'; }
+                else if (score >= 7) { label = 'Good'; cls = 'good'; }
+                else if (score >= 4) { label = 'Fair'; cls = 'fair'; }
+                else { label = 'Poor'; cls = 'poor'; }
+                scoreBadge.textContent = label;
+                scoreBadge.className = `score-badge ${cls}`;
+
+                // Issues
+                issuesContainer.innerHTML = '';
+
+                if (data.issues.length === 0) {
+                    issuesContainer.innerHTML = `
+                    <div class="no-issues">
+                        <div class="check-icon">✅</div>
+                        <h3>All Checks Passed</h3>
+                        <p>Your prompt meets all validation criteria.</p>
+                    </div>`;
+                } else {
+                    issuesContainer.innerHTML = `<div class="issues-header">Issues Found (${data.issues.length})</div>`;
+                    data.issues.forEach(issue => {
+                        const typeClass = issueTypeClass(issue.issue_type);
+                        const dotColor = issueColor(issue.issue_type);
+                        issuesContainer.innerHTML += `
+                        <div class="issue-card ${typeClass}">
+                            <div class="issue-type">
+                                <span class="dot" style="background:${dotColor}"></span>
+                                ${issue.issue_type}
+                            </div>
+                            <div class="issue-desc">${escapeHtml(issue.description)}</div>
+                            <div class="issue-suggestion">
+                                <strong>Fix:</strong> ${escapeHtml(issue.suggestion)}
+                            </div>
+                        </div>`;
+                    });
+                }
+
+                // Fixed prompt
+                if (data.fixed_prompt) {
+                    fixedSection.style.display = 'block';
+                    fixedBody.innerHTML = marked.parse(data.fixed_prompt);
+                } else {
+                    fixedSection.style.display = 'none';
+                }
+            }
+
+            // ── Copy & Download ─────────────────────────────
+            copyBtn.addEventListener('click', () => {
+                if (lastResult?.fixed_prompt) {
+                    navigator.clipboard.writeText(lastResult.fixed_prompt).then(() => {
+                        showToast('Copied to clipboard!');
+                    });
+                }
+            });
+
+            downloadBtn.addEventListener('click', () => {
+                if (!lastResult) return;
+                const report = {
+                    generated_at: new Date().toISOString(),
+                    score: lastResult.score,
+                    summary: lastResult.summary,
+                    original_prompt: lastResult.original_prompt,
+                    issues: lastResult.issues,
+                    fixed_prompt: lastResult.fixed_prompt,
+                };
+                const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `prompt-report-${Date.now()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast('Report downloaded!');
+            });
+
+            // ── Helpers ─────────────────────────────────────
+            function setLoading(loading) {
+                validateBtn.disabled = loading;
+                validateBtn.classList.toggle('loading', loading);
+            }
+
+            function hideResults() {
+                resultsContent.classList.remove('visible');
+                resultsPlaceholder.style.display = 'block';
+                fixedSection.style.display = 'none';
+            }
+
+            function showError(msg) {
+                errorContainer.innerHTML = `
+                <div class="error-banner">
+                    <span class="error-icon">⚠️</span>
+                    <span class="error-text">${escapeHtml(msg)}</span>
+                </div>`;
+            }
+
+            function clearError() {
+                errorContainer.innerHTML = '';
+            }
+
+            function showToast(msg) {
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.textContent = msg;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            }
+
+            function scoreColor(score) {
+                if (score >= 9) return 'var(--success)';
+                if (score >= 7) return 'var(--info)';
+                if (score >= 4) return 'var(--warning)';
+                return 'var(--error)';
+            }
+
+            function issueColor(type) {
+                const map = {
+                    'Redundancy': 'var(--warning)',
+                    'Contradiction': 'var(--error)',
+                    'Missing Section': 'var(--info)',
+                    'Prohibited Content': 'var(--error)',
+                    'Missing CoT/TOT': 'var(--primary)',
+                };
+                return map[type] || 'var(--text-muted)';
+            }
+
+            function issueTypeClass(type) {
+                const map = {
+                    'Redundancy': 'type-redundancy',
+                    'Contradiction': 'type-contradiction',
+                    'Missing Section': 'type-missing-section',
+                    'Prohibited Content': 'type-prohibited',
+                    'Missing CoT/TOT': 'type-cot',
+                };
+                return map[type] || '';
+            }
+
+            function escapeHtml(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
+            // ── Init ────────────────────────────────────────
+            initTheme();
+        })();
+    </script>
+</body>
+
+</html>
