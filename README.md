@@ -1,5 +1,7 @@
 # ⚡ Prompt Validator
 
+**Live Demo:** [https://promptvalidatorai.vercel.app/](https://promptvalidatorai.vercel.app/)
+
 AI-powered prompt validator that checks prompts against **4 validation rules** and generates production-ready fixes using Groq LLM (Llama 3.1).
 
 ## Validation Rules
