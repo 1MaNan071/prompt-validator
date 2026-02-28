@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import List, Optional, Literal
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
@@ -258,14 +257,13 @@ async def validate(data: PromptInput):
         raise HTTPException(status_code=500, detail=f"Validation failed: {str(e)}")
 
 
-# ─── Static Files (local dev — Vercel serves public/ automatically) ──────────
+# ─── Static Files (local dev — Vercel serves root static files automatically) ─
 
-_public_dir = Path(__file__).resolve().parent.parent / "public"
+_project_root = Path(__file__).resolve().parent.parent
+_index_html = _project_root / "index.html"
 
-if _public_dir.is_dir():
+if _index_html.is_file():
 
     @app.get("/")
     async def serve_ui():
-        return FileResponse(str(_public_dir / "index.html"))
-
-    app.mount("/", StaticFiles(directory=str(_public_dir)), name="static")
+        return FileResponse(str(_index_html))
